@@ -1,6 +1,7 @@
 var SequencerPad = React.createClass({
 
   NUM_ROWS: 4,
+  RIGHT_TO_LEFT: true,
   sounds: [
     new Howl({ urls: ['audio/rimshot.wav']}),
     new Howl({ urls: ['audio/hihat.wav']}),
@@ -10,7 +11,7 @@ var SequencerPad = React.createClass({
 
   getInitialState: function() {
     this.timer = setInterval(this.updateIndicator, 500);
-    return { current: 0, activeButtons: [], timerInterval: 500, numBeats: 8 };
+    return { current: 0, activeButtons: [], timerInterval: 500, numBeats: 8, direction: this.RIGHT_TO_LEFT };
   },
 
   updateIndicator: function() {
@@ -18,7 +19,8 @@ var SequencerPad = React.createClass({
 
     this.setState({current: current});
 
-    for (var button of this.state.activeButtons) {
+    for (var i in this.state.activeButtons) {
+      var button = this.state.activeButtons[i];
       button.setState({flash: false});
 
       // play sound and flash
@@ -57,11 +59,16 @@ var SequencerPad = React.createClass({
   },
 
   clearActiveButtons: function() {
-    for (var button of this.state.activeButtons) {
+    for (var i in this.state.activeButtons) {
+      var button = this.state.activeButtons[i];
       button.setState({active: false, flash: false});
     }
 
     this.state.activeButtons = [];
+  },
+
+  flipDirection: function() {
+    this.setState({direction: !this.state.direction});
   },
 
   render: function() {
@@ -79,11 +86,20 @@ var SequencerPad = React.createClass({
       output.push(<Indicator ref={'indicator'+i} active={this.state.current} id={i}/>);
     }
 
+    var padClasses = 'main-pad';
+    if (this.state.direction !== this.RIGHT_TO_LEFT) {
+      padClasses += ' directionFlip';
+    }
+
     return <div id="sequencer">
 
-      <div className="main-pad">
+      <div className={padClasses}>
         <div className="control-panel left">
           <TempoControl onBpmChange={this.updateBpm}></TempoControl>
+          <button type="button" className="btn btn-default" onClick={this.flipDirection}>
+            <span className="glyphicon glyphicon glyphicon-arrow-left"></span>
+            <span className="glyphicon glyphicon glyphicon-arrow-right"></span>
+          </button>
         </div>
         <ul className="indicators">
           {output}

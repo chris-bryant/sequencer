@@ -159,6 +159,12 @@ body {
   }
 }
 
+.main-pad.directionFlip {
+  .indicators li, .beatpad .button-row li {
+    float: right;
+  }
+}
+
 input.form-control {
   border-color: $primary;
   color: $primary;

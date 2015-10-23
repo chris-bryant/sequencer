@@ -1,6 +1,7 @@
 var SequencerPad = React.createClass({displayName: "SequencerPad",
 
   NUM_ROWS: 4,
+  RIGHT_TO_LEFT: true,
   sounds: [
     new Howl({ urls: ['audio/rimshot.wav']}),
     new Howl({ urls: ['audio/hihat.wav']}),
@@ -10,7 +11,7 @@ var SequencerPad = React.createClass({displayName: "SequencerPad",
 
   getInitialState: function() {
     this.timer = setInterval(this.updateIndicator, 500);
-    return { current: 0, activeButtons: [], timerInterval: 500, numBeats: 8 };
+    return { current: 0, activeButtons: [], timerInterval: 500, numBeats: 8, direction: this.RIGHT_TO_LEFT };
   },
 
   updateIndicator: function() {
@@ -18,7 +19,8 @@ var SequencerPad = React.createClass({displayName: "SequencerPad",
 
     this.setState({current: current});
 
-    for (var button of this.state.activeButtons) {
+    for (var i in this.state.activeButtons) {
+      var button = this.state.activeButtons[i];
       button.setState({flash: false});
 
       // play sound and flash
@@ -57,11 +59,16 @@ var SequencerPad = React.createClass({displayName: "SequencerPad",
   },
 
   clearActiveButtons: function() {
-    for (var button of this.state.activeButtons) {
+    for (var i in this.state.activeButtons) {
+      var button = this.state.activeButtons[i];
       button.setState({active: false, flash: false});
     }
 
     this.state.activeButtons = [];
+  },
+
+  flipDirection: function() {
+    this.setState({direction: !this.state.direction});
   },
 
   render: function() {
@@ -79,11 +86,20 @@ var SequencerPad = React.createClass({displayName: "SequencerPad",
       output.push(React.createElement(Indicator, {ref: 'indicator'+i, active: this.state.current, id: i}));
     }
 
+    var padClasses = 'main-pad';
+    if (this.state.direction !== this.RIGHT_TO_LEFT) {
+      padClasses += ' directionFlip';
+    }
+
     return React.createElement("div", {id: "sequencer"}, 
 
-      React.createElement("div", {className: "main-pad"}, 
+      React.createElement("div", {className: padClasses}, 
         React.createElement("div", {className: "control-panel left"}, 
-          React.createElement(TempoControl, {onBpmChange: this.updateBpm})
+          React.createElement(TempoControl, {onBpmChange: this.updateBpm}), 
+          React.createElement("button", {type: "button", className: "btn btn-default", onClick: this.flipDirection}, 
+            React.createElement("span", {className: "glyphicon glyphicon glyphicon-arrow-left"}), 
+            React.createElement("span", {className: "glyphicon glyphicon glyphicon-arrow-right"})
+          )
         ), 
         React.createElement("ul", {className: "indicators"}, 
           output
